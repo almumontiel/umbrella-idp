@@ -1,0 +1,16 @@
+
+ShibMultiFactorAuth {
+ 
+   edu.vt.middleware.ldap.jaas.LdapLoginModule required
+      host="lxb007.devops.gsi.de"
+      port="389"
+      ssl="false"
+      base="ou=people,dc=eurofel,dc=eu"
+      tls="false"
+      userField="uid"
+   ;
+ 
+   com.yubico.jaas.HttpOathOtpLoginModule sufficient
+      protectedUrl = "https://lxb007.devops.gsi.de/oath-protected/"
+      expectedOutput = "Authenticated OK.";
+};

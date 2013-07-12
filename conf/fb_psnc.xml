@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * Facebook Login Servlet - Shiboleth Identity Provider integrator with Facebook 
+ * Copyright (C) 2012 Poznan Supercomputing and Networking Center - Application Department
+ * 
+ * contact: adamski@man.poznan.pl
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms
+ * of the GNU General Public License as published by the Free Software Foundation,
+ * either version 3 of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details. You should have received a copy of
+ * the GNU General Public License along with this program.
+ * If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * 
+ * Poznan Supercomputing and Networking Center - Application Department,
+ * ul.Dąbrowskiego 79a, 60-529 Poznań, Poland. (+48 61) 858-20-72
+ * http://apps.man.poznan.pl/
+ * 
+ * This application was developed as a part of the SYNAT project 
+ * http://www.synat.pl/en
+ * 
+ * Poznan Supercomputing and Networking Center, hereby disclaims all copyright interest in
+ * the Facebook Login Servlet written by Jakub "Erwin" Aftowicz. (erwin37@gmail.com)
+ * 
+ * Marcin Adamski , 21 MAY 2012 (adamski@man.poznan.pl)
+ -->
+ 
+   <FacebookServletConfiguration 
+    xmlns="http://www.man.poznan.pl/fb_psnc.xsd" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="www.man.poznan.pl fb_psnc.xsd"
+    APP_ID="**********************" 
+    APP_SECRET="xxxxxxxyyyyyyyy00000">
+    
+        <DataBaseConfiguration isUsed="true">
+            <Driver>com.mysql.jdbc.Driver</Driver>
+            <DatabaseName>jdbc:mysql://MY_BASE_ADDRESS/MY_BASE</DatabaseName>
+            <JNDI>jdbc/myConnectionPool</JNDI>
+            <UserName>DATABASE_USER</UserName>
+            <Password>DATABASE_PASS</Password>
+            <Statement>SELECT sample1, sample2, sample3 FROM my_table WHERE email=?</Statement>
+        </DataBaseConfiguration>
+ 
+ 
+        <BlackListConfiguration isUsed="true">
+            <Driver>com.mysql.jdbc.Driver</Driver>
+            <DatabaseName>jdbc:mysql://MY_BASE_ADDRESS/MY_BASE</DatabaseName>
+            <JNDI>jdbc/myConnectionPool</JNDI>
+            <UserName>DATABASE_USER</UserName>
+            <Password>DATABASE_PASS</Password>
+            <Statement>SELECT email FROM banned_users WHERE email=?</Statement>
+            <RedirectAddress>$IDP_BASE_URL$/banned.jsp</RedirectAddress>
+        </BlackListConfiguration>
+ 
+    
+        <FacebookParameters>
+            <FbParameter name="id" return="false"/>    
+            <FbParameter name="name" return="false"/>
+            <FbParameter name="first_name" return="false"/>
+            <FbParameter name="middle_name" return="false"/>
+            <FbParameter name="last_name" return="false"/>
+            <FbParameter name="email" return="true" numberInStatement="1" numberInBlackListStatement="1"/> 
+        </FacebookParameters>
+    
+        
+    
+        <Parameters>
+            <Parameter name="sample1" default="guest"/> 
+            <Parameter name="sample2" default="guest"/> 
+            <Parameter name="sample3" default="guest"/>           
+        </Parameters>
+ 
+ 
+    </FacebookServletConfiguration>

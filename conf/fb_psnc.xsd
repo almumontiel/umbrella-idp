@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * Facebook Login Servlet - Shiboleth Identity Provider integrator with Facebook 
+ * Copyright (C) 2012 Poznan Supercomputing and Networking Center - Application Department
+ * 
+ * contact: adamski@man.poznan.pl
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms
+ * of the GNU General Public License as published by the Free Software Foundation,
+ * either version 3 of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details. You should have received a copy of
+ * the GNU General Public License along with this program.
+ * If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * 
+ * Poznan Supercomputing and Networking Center - Application Department,
+ * ul.Dąbrowskiego 79a, 60-529 Poznań, Poland. (+48 61) 858-20-72
+ * http://apps.man.poznan.pl/
+ * 
+ * This application was developed as a part of the SYNAT project 
+ * http://www.synat.pl/en
+ * 
+ * Poznan Supercomputing and Networking Center, hereby disclaims all copyright interest in
+ * the Facebook Login Servlet written by Jakub "Erwin" Aftowicz. (erwin37@gmail.com)
+ * 
+ * Marcin Adamski , 21 MAY 2012 (adamski@man.poznan.pl)
+-->
+<xs:schema targetNamespace="https://apps.man.poznan.pl/svn/idp-facebook-integration/downloads/fb_psnc.xsd" elementFormDefault="qualified"
+    attributeFormDefault="unqualified" xmlns="https://apps.man.poznan.pl/svn/idp-facebook-integration/downloads/fb_psnc.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:mstns="https://apps.man.poznan.pl/svn/idp-facebook-integration/downloads/fb_psnc.xsd">
+    <xs:element name="FacebookServletConfiguration">
+        <xs:annotation>
+            <xs:documentation>
+                XML-Schema for fb_psnc.xml file.
+                Facebook Login Servlet details: http://apps.man.poznan.pl/trac/idp-facebook-integration/wiki/IdpMain 
+                Configuration File details: http://apps.man.poznan.pl/trac/idp-facebook-integration/wiki/IdpConfFile
+            </xs:documentation>
+            
+        </xs:annotation>
+
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="DataBaseConfiguration" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>
+                            This section enables configuration of SQL database which will be used to obtain attributes defined in element "Parameters".    
+                            Driver requires JDBC class name (i.e. com.mysql.jdbc.Driver) and also appropriate .jar in [war]/WEB-INF/lib directory
+                            Database name defines database addres and name in JDBC convention, UserName and Password determines user credentials for database.
+                            Statement may contain "?". In it's place FbParamaters values (obtained from Facebook) with attribute "numberInStatement" set will be bind. 
+                        </xs:documentation>
+                    </xs:annotation>
+
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Driver" type="xs:string" minOccurs="1">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        JDBC convention (i.e. com.mysql.jdbc.Driver)
+                                    </xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
+                            <xs:element name="DatabaseName" type="xs:string" minOccurs="0" maxOccurs="1">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        JDBC convention (i.e. jdbc:postgresql://MY_BASE_ADDRESS/MY_BASE)
+                                    </xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
+                            <xs:element name="JNDI" type="xs:string" minOccurs="0" maxOccurs="1">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        JNDI name of Container Connection Pool for context lookup
+                                    </xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
+                            <xs:element name="UserName" type="xs:string" minOccurs="0" maxOccurs="1"/>
+                            <xs:element name="Password" type="xs:string" minOccurs="0"/>
+                            <xs:element name="Statement" type="xs:string" minOccurs="1"/>
+                        </xs:sequence>
+
+                        <xs:attribute name="isUsed" type="xs:boolean" use="required">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    Using Database is completely optional and can be dropped (even if is configured) any time by simply changing this parameter.
+                                    Simple Facebook Data Connector can be obtained by turning off both Black List and Data Base.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+
+
+                <xs:element name="BlackListConfiguration" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>
+                            This section enables configuration of so called "Black List" and it's database.
+                            Driver requires JDBC class name (i.e. com.mysql.jdbc.Driver) and also appropriate .jar in [war]/WEB-INF/lib directory
+                            Database name defines database addres and name in JDBC convention, UserName and Password determines user credentials for database.
+                            Statement may contain "?". In it's place FbParamaters values (obtained from Facebook) with attribute "numberInBlackListStatement" set will be bind. 
+                            Redirect address defines URL of banned-user web page.
+                        </xs:documentation>
+                    </xs:annotation>
+
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Driver" type="xs:string" minOccurs="1">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        JDBC convention (i.e. com.mysql.jdbc.Driver)
+                                    </xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
+                            <xs:element name="DatabaseName" type="xs:string" minOccurs="0" maxOccurs="1">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        JDBC convention (i.e. jdbc:postgresql://MY_BASE_ADDRESS/MY_BASE)
+                                    </xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
+                            <xs:element name="JNDI" type="xs:string" minOccurs="0" maxOccurs="1">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        JNDI name of Container Connection Pool for context lookup
+                                    </xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
+                            <xs:element name="UserName" type="xs:string" minOccurs="0" maxOccurs="1"/>
+                            <xs:element name="Password" type="xs:string" minOccurs="0"/>
+                            <xs:element name="Statement" type="xs:string" minOccurs="1"/>
+                            <xs:element name="RedirectAddress" type="xs:string" minOccurs="1">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        Full URL of user-banned page, which will be displayed in case user is on a Black List
+                                    </xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
+                        </xs:sequence>
+
+                        <xs:attribute name="isUsed" type="xs:boolean" use="required">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    Using Black List is completely optional and can be dropped (even if is configured) any time by simply changing this parameter.
+                                    Simple Facebook Data Connector can be obtained by turning off both Black List and Data Base.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+
+                    </xs:complexType>
+                </xs:element>
+
+
+                <xs:element name="FacebookParameters" minOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation> 
+                            Most important and obligatory section. Defines which attributes, from Facebook Graph (http://developers.facebook.com/docs/reference/api/user/),
+                            will be requested. Facebook Login Servlet will generate proper Code Request to Facebook,
+                            which will include all necessary permissions to obtain all attributes.
+                            Each parameter can be returned to IdP or only used in SQL binding. 
+                            Each parameter can be bind to both Black List Statement and Database Statement.
+                            All of "name", "numberInStatement", "numberInblackListStatement" attributes must be unique.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="FbParameter" maxOccurs="unbounded" minOccurs="1">
+                                <xs:complexType>
+                                    <xs:attribute name="name" use="required">
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:string">
+                                                <xs:enumeration value="id"/>
+                                                <xs:enumeration value="name"/>
+                                                <xs:enumeration value="first_name"/>
+                                                <xs:enumeration value="middle_name"/>
+                                                <xs:enumeration value="last_name"/>
+                                                <xs:enumeration value="gender"/>
+                                                <xs:enumeration value="locale"/>
+                                                <xs:enumeration value="link"/>
+                                                <xs:enumeration value="username"/>
+                                                <xs:enumeration value="third_party_id"/>
+                                                <xs:enumeration value="updated_time"/>
+                                                <xs:enumeration value="verified"/>
+                                                <xs:enumeration value="bio"/>
+                                                <xs:enumeration value="birthday"/>
+                                                <xs:enumeration value="email"/>
+                                                <xs:enumeration value="political"/>
+                                                <xs:enumeration value="quotes"/>
+                                                <xs:enumeration value="relationship_status"/>
+                                                <xs:enumeration value="religion"/>
+                                                <xs:enumeration value="website"/>
+                                            </xs:restriction>
+                                            
+                                        </xs:simpleType>
+                                    </xs:attribute>
+                                    <xs:attribute name="return" type="xs:boolean" use="required">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                               Is this attribute returned to IdP or is just used to create SQL query
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="numberInStatement" use="optional"
+                                        type="xs:positiveInteger">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                               Define the number of a parameter in prepared SQL statement 
+                                             </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    
+                                    <xs:attribute name="numberInBlackListStatement" use="optional"
+                                        type="xs:positiveInteger">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                Define the number of a parameter in prepared SQL-Black List statement 
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+
+                    <xs:unique name="UniqueIdInSqlStatment">
+                        <xs:selector xpath="mstns:FbParameter"/>
+                        <xs:field xpath="@numberInStatement"/>
+                    </xs:unique>
+                    
+                    
+                    <xs:unique name="UniqueIdInBlackListStatment">
+                        <xs:selector xpath="mstns:FbParameter"/>
+                        <xs:field xpath="@numberInBlackListStatement"/>
+                    </xs:unique>
+                    
+
+                </xs:element>
+
+
+                <xs:element name="Parameters" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The second-most important but non-obligatory section.
+                            It defines default values of parameters, in case user was not authenticated in database.
+                            Number of offspring of this Element must be equal to number of attributes to be fetched from SQL statement.
+                            The "default" attribute values will be added to Principal, which will be then return to IdP.
+                            Attribute "name" is only a user friendly etiquette. What matters is the order of appearance, both unboud attributes in the SQL query,
+                            and offspring elements ("Parameter") of this element.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Parameter" maxOccurs="unbounded" minOccurs="1">
+                                <xs:complexType>
+                                    <xs:attribute name="name" type="xs:string" use="required"/>
+                                    <xs:attribute name="default" type="xs:string" use="optional">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                Set up a default value of an attribute. This value is a default for a "guest" user which can't be authenticated by IdP
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
+
+            </xs:sequence>
+
+            <xs:attribute name="APP_ID" type="xs:unsignedLong" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        Application Id given by Facebook
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="APP_SECRET" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        Application Secret given by Facebook. You can use this Secret to verify Facebook status for the user, and it must be kept a secret between you and facebook.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+
+
+        </xs:complexType>
+
+
+
+    </xs:element>
+
+
+</xs:schema>

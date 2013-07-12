@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Created-By: Apache Maven
+Built-By: sitya
+Build-Jdk: 1.6.0_33
+Main-Class: edu.internet2.middleware.shibboleth.idp.Version
+
+Name: edu/internet2/middleware/shibboleth/idp/
+Implementation-Version: 2.3.8-slo10
+Implementation-Vendor: shibboleth.internet2.edu
+Implementation-Title: shibboleth-identityprovider
+

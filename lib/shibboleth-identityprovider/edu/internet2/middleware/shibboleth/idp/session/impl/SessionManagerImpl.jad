@@ -1,0 +1,203 @@
+// Decompiled by Jad v1.5.8e. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.geocities.com/kpdus/jad.html
+// Decompiler options: packimports(3) 
+// Source File Name:   SessionManagerImpl.java
+
+package edu.internet2.middleware.shibboleth.idp.session.impl;
+
+import edu.internet2.middleware.shibboleth.common.session.SessionManager;
+import edu.internet2.middleware.shibboleth.idp.session.Session;
+import java.security.SecureRandom;
+import java.util.Iterator;
+import java.util.List;
+import org.apache.commons.ssl.util.Hex;
+import org.opensaml.saml1.core.NameIdentifier;
+import org.opensaml.saml2.core.NameID;
+import org.opensaml.util.storage.StorageService;
+import org.opensaml.xml.util.DatatypeHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
+// Referenced classes of package edu.internet2.middleware.shibboleth.idp.session.impl:
+//            SessionImpl, SessionManagerEntry
+
+public class SessionManagerImpl
+    implements SessionManager
+{
+
+    public SessionManagerImpl(StorageService storageService, long lifetime)
+    {
+        log = LoggerFactory.getLogger(edu/internet2/middleware/shibboleth/idp/session/impl/SessionManagerImpl);
+        prng = new SecureRandom();
+        sessionStore = storageService;
+        partition = "session";
+        sessionLifetime = lifetime;
+    }
+
+    public SessionManagerImpl(StorageService storageService, String storageParition, long lifetime)
+    {
+        log = LoggerFactory.getLogger(edu/internet2/middleware/shibboleth/idp/session/impl/SessionManagerImpl);
+        prng = new SecureRandom();
+        sessionStore = storageService;
+        if(!DatatypeHelper.isEmpty(storageParition))
+            partition = DatatypeHelper.safeTrim(storageParition);
+        else
+            partition = "session";
+        sessionLifetime = lifetime;
+    }
+
+    public Session createSession()
+    {
+        byte sid[] = new byte[32];
+        prng.nextBytes(sid);
+        String sessionID = Hex.encode(sid);
+        byte sessionSecret[] = new byte[16];
+        prng.nextBytes(sessionSecret);
+        Session session = new SessionImpl(sessionID, sessionSecret, sessionLifetime);
+        SessionManagerEntry sessionEntry = new SessionManagerEntry(session, sessionLifetime);
+        sessionStore.put(partition, sessionID, sessionEntry);
+        MDC.put("idpSessionId", sessionID);
+        log.trace("Created session {}", sessionID);
+        return session;
+    }
+
+    public Session createSession(String principal)
+    {
+        byte sid[] = new byte[32];
+        prng.nextBytes(sid);
+        String sessionID = Hex.encode(sid);
+        byte sessionSecret[] = new byte[16];
+        prng.nextBytes(sessionSecret);
+        Session session = new SessionImpl(sessionID, sessionSecret, sessionLifetime);
+        SessionManagerEntry sessionEntry = new SessionManagerEntry(session, sessionLifetime);
+        sessionStore.put(partition, sessionID, sessionEntry);
+        MDC.put("idpSessionId", sessionID);
+        log.trace("Created session {}", sessionID);
+        return session;
+    }
+
+    public void destroySession(String sessionID)
+    {
+        if(sessionID == null)
+            return;
+        SessionManagerEntry sessionEntry = (SessionManagerEntry)sessionStore.get(partition, sessionID);
+        if(sessionEntry == null)
+            return;
+        String sessionIndex;
+        for(Iterator i$ = sessionEntry.getSessionIndexes().iterator(); i$.hasNext(); sessionStore.remove(partition, sessionIndex))
+            sessionIndex = (String)i$.next();
+
+        sessionStore.remove(partition, sessionID);
+    }
+
+    public Session getSession(String sessionID)
+    {
+        if(sessionID == null)
+            return null;
+        SessionManagerEntry sessionEntry = (SessionManagerEntry)sessionStore.get(partition, sessionID);
+        if(sessionEntry == null)
+            return null;
+        if(sessionEntry.isExpired())
+        {
+            destroySession(sessionEntry.getSessionId());
+            return null;
+        } else
+        {
+            return sessionEntry.getSession();
+        }
+    }
+
+    public boolean indexSession(Session session, String index)
+    {
+        if(sessionStore.contains(partition, index))
+            return false;
+        SessionManagerEntry sessionEntry = (SessionManagerEntry)sessionStore.get(partition, session.getSessionID());
+        if(sessionEntry == null)
+            return false;
+        if(sessionEntry.getSessionIndexes().contains(index))
+        {
+            return true;
+        } else
+        {
+            sessionEntry.getSessionIndexes().add(index);
+            sessionStore.put(partition, index, sessionEntry);
+            log.trace("Added index {} to session {}", index, session.getSessionID());
+            return true;
+        }
+    }
+
+    public void removeSessionIndex(String index)
+    {
+        SessionManagerEntry sessionEntry = (SessionManagerEntry)sessionStore.remove(partition, index);
+        if(sessionEntry != null)
+        {
+            log.trace("Removing index {} for session {}", index, sessionEntry.getSessionId());
+            sessionEntry.getSessionIndexes().remove(index);
+        }
+    }
+
+    public String getIndexFromNameID(NameIdentifier nameIdentifier)
+    {
+        if(nameIdentifier == null || nameIdentifier.getNameIdentifier() == null)
+            return null;
+        StringBuilder b = new StringBuilder();
+        b.append(nameIdentifier.getNameIdentifier());
+        b.append("|");
+        b.append(nameIdentifier.getFormat());
+        if(nameIdentifier.getNameQualifier() != null)
+        {
+            b.append("|");
+            b.append(nameIdentifier.getNameQualifier());
+        }
+        return b.toString();
+    }
+
+    public String getIndexFromNameID(NameID nameIdentifier)
+    {
+        if(nameIdentifier == null || nameIdentifier.getValue() == null)
+            return null;
+        StringBuilder b = new StringBuilder();
+        b.append(nameIdentifier.getValue());
+        b.append("|");
+        b.append(nameIdentifier.getFormat());
+        if(nameIdentifier.getNameQualifier() != null || nameIdentifier.getSPNameQualifier() != null)
+        {
+            b.append("|");
+            b.append(nameIdentifier.getNameQualifier());
+        }
+        if(nameIdentifier.getSPNameQualifier() != null)
+        {
+            b.append("|");
+            b.append(nameIdentifier.getSPNameQualifier());
+        }
+        return b.toString();
+    }
+
+    public volatile boolean indexSession(edu.internet2.middleware.shibboleth.common.session.Session x0, String x1)
+    {
+        return indexSession((Session)x0, x1);
+    }
+
+    public volatile edu.internet2.middleware.shibboleth.common.session.Session getSession(String x0)
+    {
+        return getSession(x0);
+    }
+
+    public volatile edu.internet2.middleware.shibboleth.common.session.Session createSession(String x0)
+    {
+        return createSession(x0);
+    }
+
+    public volatile edu.internet2.middleware.shibboleth.common.session.Session createSession()
+    {
+        return createSession();
+    }
+
+    private final Logger log;
+    private final int sessionIDSize = 32;
+    private final SecureRandom prng;
+    private StorageService sessionStore;
+    private String partition;
+    private long sessionLifetime;
+}
